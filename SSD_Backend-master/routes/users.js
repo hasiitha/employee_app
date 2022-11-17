@@ -1,96 +1,50 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/userModel");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-var RegistrationValidation = require("../middleware/jwtValidation/registrationValidation");
+var UserRegistrationValidation = require("../middleware/jwtValidation/registrationValidation");
+const { userLoging, UserRegistration } = require("../service/userService");
 
 //login
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
-  const user = await User.findOne({ username });
+  try {
+    const result = userLoging(username, password);
 
-  if (user && (await bcrypt.compare(password, user.password))) {
-    res.json({
-      _id: user._id,
-      username: user.username,
-      token: generateToken(user._id, user.role),
-      role: user.role,
-    });
-  } else {
+    if (result.status === 200) {
+      res.json(result.obj);
+    } else {
+      res.status(400).json({ message: "invalid" });
+    }
+  } catch (err) {
     res.status(400).json({ message: "invalid" });
   }
 
   // res.json({message: 'Login User'})
 });
 
-//create staff
+//create soffice user
 router.post("/create", async (req, res) => {
   //jwt validation
-  if (RegistrationValidation(req)) {
-    const { username, password, role } = req.body;
-    const userExists = await User.findOne({ username });
-    if (userExists) {
-      res.status(400).json({ message: "invalid" });
-    } else {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
+  try {
+    if (UserRegistrationValidation(req)) {
+      const { username, password, role } = req.body;
 
-      const user = await User.create({
-        username,
-        password: hashedPassword,
-        role,
-      });
-
-      if (user) {
-        res.status(201).json({
-          _id: user._id,
-          username: user.username,
-          role: user.role,
-        });
+      const result = UserRegistration(username, password, role);
+      if (result.status === 201) {
+        res.json(result.obj);
       } else {
-        res.status(400);
-        throw new Error("Invalid user data");
+        res.status(400).json({ message: "invalid" });
       }
+    } else {
+      res.status(401).json({
+        code: 401,
+        error: "Permission not granted",
+      });
     }
-  } else {
-    res.status(401).json({
-      code: 401,
-      error: "Permission not granted",
-    });
+  } catch (err) {
+    res.status(400).json({ message: "invalid" });
   }
 });
-
-const generateToken = (id, role) => {
-  if (role === "Admin") {
-    let data = {
-      permission: ["01"],
-      role: "Admin",
-      id: id,
-    };
-    return jwt.sign(data, process.env.JWT_SECRET, {
-      expiresIn: "30d",
-    });
-  } else if (role === "Manager") {
-    let data = {
-      permission: ["02", "03"],
-      role: "Manager",
-      id: id,
-    };
-    return jwt.sign(data, process.env.JWT_SECRET, {
-      expiresIn: "30d",
-    });
-  } else if (role === "Worker") {
-    let data = {
-      permission: ["02"],
-      role: "Worker",
-      id: id,
-    };
-    return jwt.sign(data, process.env.JWT_SECRET, {
-      expiresIn: "30d",
-    });
-  }
-};
 
 module.exports = router;
