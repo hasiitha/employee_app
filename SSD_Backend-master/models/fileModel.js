@@ -1,10 +1,7 @@
 const mongoose = require("mongoose");
 
 const fileSchema = mongoose.Schema({
-  message: {
-    type: String,
-    required: true,
-  },
+  
   file: {
     type: String,
     required: true,

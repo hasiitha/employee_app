@@ -3,55 +3,54 @@ var FileAuthenticate = require("../middleware/fileAuth");
 var FileValidation = require("../middleware/jwtValidation/fileValidation");
 var EncryptionService = require("../service/encryptionService");
 
-const createFile = async (message, sender, encryptedMsg, request,file,encryptedFiles) => {
-  var encryptedMsg = EncryptionService(message);
+const createFile = async (file,encryptedFiles,sender,request) => {
+    return new Promise(async (resolve, reject) => {  
   var encryptedFile = EncryptionService(file);
   var encryptedSender = EncryptionService(sender);
 
   const fileDetails = new FileModel({
-    message: encryptedMsg,
-    encryptedMsg: encryptedMsg,
     file: encryptedFile,
-    encryptedFile: encryptedFiles,
+    // encryptedFile: encryptedFiles,
     sender: encryptedSender,
   });
 
   if (FileValidation(request)) {
     //Message authentication
-    if (FileAuthenticate(message, encryptedMsg,file,encryptedFiles)) {
+    if (FileAuthenticate(file,encryptedFiles)) {
       try {
         const message = await fileDetails.save();
-        return {
+        resolve ({
           status: 201,
           obj: message,
-        };
+      });
       } catch (err) {
-        return {
+        reject ({
           status: 400,
           obj: {
             code: 400,
             error: err.message,
           },
-        };
+        });
       }
     } else {
-      return {
+      reject( {
         status: 401,
         obj: {
           code: 401,
           error: "File authentication failed",
         },
-      };
+      });
     }
   } else {
-    return {
+    reject( {
       status: 401,
       obj: {
         code: 401,
         error: "Permission not granted",
       },
-    };
+    });
   }
+})
 };
 
 module.exports = createFile;
