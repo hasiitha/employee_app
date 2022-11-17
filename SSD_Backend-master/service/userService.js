@@ -63,7 +63,7 @@ const generateToken = (id, role) => {
       id: id,
     };
     return jwt.sign(data, process.env.JWT_SECRET, {
-      expiresIn: "30d",
+      expiresIn: "1h",
     });
   } else if (role === "Manager") {
     let data = {
@@ -72,7 +72,7 @@ const generateToken = (id, role) => {
       id: id,
     };
     return jwt.sign(data, process.env.JWT_SECRET, {
-      expiresIn: "30d",
+      expiresIn: "1h",
     });
   } else if (role === "Worker") {
     let data = {
@@ -81,7 +81,7 @@ const generateToken = (id, role) => {
       id: id,
     };
     return jwt.sign(data, process.env.JWT_SECRET, {
-      expiresIn: "30d",
+      expiresIn: "1h",
     });
   }
 };
