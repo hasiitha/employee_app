@@ -25,6 +25,7 @@ class Login extends Component {
     axios
       .post("http://localhost:4000/users/login", this.state)
       .then((res) => {
+        console.log("res", res);
         sessionStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("jwtToken", res.data.token);
         localStorage.setItem("username", res.data.username);
