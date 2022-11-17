@@ -17,6 +17,8 @@ const options = {
 app.use(cors());
 app.use(bodyParser.json({ extended: false }));
 
+let PORT = process.env.PORT;
+
 mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true });
 const db = mongoose.connection;
 db.on("error", (error) => console.error(error));
@@ -35,7 +37,7 @@ app.use("/messages", messageRouter);
 const fileRouter = require("./routes/files");
 app.use("/files", fileRouter);
 
-let server = app.listen(4000, () => {
+let server = app.listen(PORT, () => {
   var host = server.address().address;
   var port = server.address().port;
   console.log("Server Started on port ", port, host);
