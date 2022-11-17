@@ -4,11 +4,11 @@ const createFile = require("../service/fileService");
 
 router.post("/files", async (req, res) => {
   //encrypt original payload
-  const { encryptedMsg, message, encryptedFile, file,sender } = req.body;
+  const { file, encryptedfile,sender } = req.body;
 
   try {
-    const result = createFile(message, sender, encryptedMsg,file,encryptedFile);
-
+    const result =await createFile(file,encryptedfile,sender,req);
+    console.log("Result",result);
     if (result.status === 201) {
       res.json(result.obj);
     } else if (result.status === 401) {

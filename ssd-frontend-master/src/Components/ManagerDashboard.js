@@ -55,27 +55,28 @@ class ManagerDashboard extends Component {
     e.preventDefault();
     console.log("hadler submit fired");
 
-    let messagetoEncrypt = this.state.message;
+    // let messagetoEncrypt = this.state.message;
     let filetoEncrypt = this.state.file;
 
-    console.log(messagetoEncrypt, " before encrypt message");
+    // console.log(messagetoEncrypt, " before encrypt message");
     console.log(filetoEncrypt, "before encrypt file");
 
-    let encrypted_message = this.handlerEncrypt(messagetoEncrypt);
+    // let encrypted_message = this.handlerEncrypt(messagetoEncrypt);
     let encrypted_file = this.handlerEncrypt(filetoEncrypt);
 
-    console.log(encrypted_message, " after encrypt message");
+    // console.log(encrypted_message, " after encrypt message");
     console.log(encrypted_file, "after encrypt file");
 
     const jwt = localStorage.getItem("jwtToken");
 
     let toSendObj = {
-      message: messagetoEncrypt,
-      encryptedMsg: encrypted_message,
+      // message: messagetoEncrypt,
+      // encryptedMsg: encrypted_message,
       file: filetoEncrypt,
       encryptedfile: encrypted_file,
       sender: this.state.sender,
     };
+
     // var sendingTxt = CryptoJS.enc.Utf8.parse(this.state.message);
     // var key = CryptoJS.enc.Utf8.parse("JaNdRgUkXp2s5v8y");
     // var encrypted = CryptoJS.AES.encrypt(sendingTxt, key, {
@@ -85,6 +86,49 @@ class ManagerDashboard extends Component {
     // encrypted = encrypted.ciphertext.toString(CryptoJS.enc.Hex);
     // this.state.encryptedMsg = encrypted;
     // console.log("Encrypted message : ", this.state.encryptedMsg);
+    axios.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
+    axios
+      .post("http://localhost:4000/files/files", toSendObj, {})
+      .then((response) => {
+        console.log(response);
+        alert("File sent successfully");
+        window.location.reload(false);
+      })
+      .catch((error) => {
+        if (error.response) {
+          console.log(error.response.data); // => the response payload
+        }
+        if (error.response.data.code === 401) {
+          alert(
+            "File authentication failed, someones changing your data on the way to the server"
+          );
+        }
+        if (error.response.data.code === 404) {
+          alert("File sending failed");
+        }
+      });
+  };
+
+  handleMessage = async (e) => {
+    e.preventDefault();
+    console.log("hadler message fired");
+
+    let messagetoEncrypt = this.state.message;
+
+    console.log(messagetoEncrypt, " before encrypt message");
+
+    let encrypted_message = this.handlerEncrypt(messagetoEncrypt);
+
+    console.log(encrypted_message, " after encrypt message");
+
+    const jwt = localStorage.getItem("jwtToken");
+
+    let toSendObj = {
+      message: messagetoEncrypt,
+      encryptedMsg: encrypted_message,
+      sender: this.state.sender,
+    };
+
     axios.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
     axios
       .post("http://localhost:4000/messages/messages", toSendObj, {})
@@ -106,8 +150,9 @@ class ManagerDashboard extends Component {
           alert("Message sending failed");
         }
       });
-  };
 
+
+  }
   uploadFile = async (e) => {
     console.log("changed");
     const file = e.target.files[0];
@@ -157,6 +202,10 @@ class ManagerDashboard extends Component {
                   required
                 />
                 <br />
+                <Button variant="contained" onClick={this.handleMessage}>
+                  Send Message
+                </Button>
+                <br />
                 <Button variant="outlined" component="label">
                   Upload File
                   <input
@@ -169,7 +218,7 @@ class ManagerDashboard extends Component {
                 </Button>
                 <br />
                 <Button variant="contained" onClick={this.handleSubmit}>
-                  Send
+                  Send File
                 </Button>
               </FormControl>
             </form>
