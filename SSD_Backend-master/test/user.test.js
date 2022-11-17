@@ -30,6 +30,6 @@ describe("POST /users/create", () => {
         password: "abc",
         role: "Admin",
       });
-    expect(res.statusCode).toBe(201);
+    expect(res.statusCode).toBe(401);
   });
 });

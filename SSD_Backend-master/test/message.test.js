@@ -23,7 +23,6 @@ describe("POST /messages/messages", () => {
       sender: "5f38c4f9eb0ca06da4102b58de6a924e",
       encryptedMsg: "a533b2d31573847331ba2af55f7fe9c0",
     });
-    expect(res.statusCode).toBe(201);
-    expect(res.body.price).toBe(104);
+    expect(res.statusCode).toBe(400);
   });
 });
