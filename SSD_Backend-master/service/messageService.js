@@ -12,7 +12,7 @@ const createMessge = async (message, sender, encrypteMsg, request) => {
 
     const messagesDetails = new MessageModel({
       message: encryptedMsg,
-      encryptedMsg: encryptedMsg,
+      encryptedMsg: encrypteMsg,
       sender: encryptedSender,
     });
 
