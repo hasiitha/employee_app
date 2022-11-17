@@ -12,6 +12,7 @@ class ManagerDashboard extends Component {
       message: "",
       encryptedMsg: "",
       sender: user,
+      file: "",
     };
   }
 
@@ -21,21 +22,72 @@ class ManagerDashboard extends Component {
     });
   };
 
-  handleSubmit = (e) => {
-    e.preventDefault();
-    const jwt = localStorage.getItem("jwtToken");
-    var sendingTxt = CryptoJS.enc.Utf8.parse(this.state.message);
-    var key = CryptoJS.enc.Utf8.parse("JaNdRgUkXp2s5v8y");
-    var encrypted = CryptoJS.AES.encrypt(sendingTxt, key, {
+  convertBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+
+      fileReader.onload = () => {
+        resolve(fileReader.result);
+      };
+
+      fileReader.onerror = (error) => {
+        reject(error);
+      };
+    });
+  };
+
+  handlerEncrypt = (data) => {
+    let sendingTxt = CryptoJS.enc.Utf8.parse(data);
+    let key = CryptoJS.enc.Utf8.parse("JaNdRgUkXp2s5v8y");
+    let encrypted = CryptoJS.AES.encrypt(sendingTxt, key, {
       mode: CryptoJS.mode.ECB,
       padding: CryptoJS.pad.ZeroPadding,
     });
     encrypted = encrypted.ciphertext.toString(CryptoJS.enc.Hex);
-    this.state.encryptedMsg = encrypted;
-    console.log("Encrypted message : ", this.state.encryptedMsg);
+    //encrypted string to send
+
+    console.log("Encrypted message : ", encrypted);
+    return encrypted;
+  };
+
+  handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("hadler submit fired");
+
+    let messagetoEncrypt = this.state.message;
+    let filetoEncrypt = this.state.file;
+
+    console.log(messagetoEncrypt, " before encrypt message");
+    console.log(filetoEncrypt, "before encrypt file");
+
+    let encrypted_message = this.handlerEncrypt(messagetoEncrypt);
+    let encrypted_file = this.handlerEncrypt(filetoEncrypt);
+
+    console.log(encrypted_message, " after encrypt message");
+    console.log(encrypted_file, "after encrypt file");
+
+    const jwt = localStorage.getItem("jwtToken");
+
+    let toSendObj = {
+      message: messagetoEncrypt,
+      encryptedMsg: encrypted_message,
+      file: filetoEncrypt,
+      encryptedfile: encrypted_file,
+      sender: this.state.sender,
+    };
+    // var sendingTxt = CryptoJS.enc.Utf8.parse(this.state.message);
+    // var key = CryptoJS.enc.Utf8.parse("JaNdRgUkXp2s5v8y");
+    // var encrypted = CryptoJS.AES.encrypt(sendingTxt, key, {
+    //   mode: CryptoJS.mode.ECB,
+    //   padding: CryptoJS.pad.ZeroPadding,
+    // });
+    // encrypted = encrypted.ciphertext.toString(CryptoJS.enc.Hex);
+    // this.state.encryptedMsg = encrypted;
+    // console.log("Encrypted message : ", this.state.encryptedMsg);
     axios.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
     axios
-      .post("http://localhost:4000/messages/messages", this.state, {})
+      .post("http://localhost:4000/messages/messages", toSendObj, {})
       .then((response) => {
         console.log(response);
         alert("Message sent successfully");
@@ -54,6 +106,20 @@ class ManagerDashboard extends Component {
           alert("Message sending failed");
         }
       });
+  };
+
+  uploadFile = async (e) => {
+    console.log("changed");
+    const file = e.target.files[0];
+    let base64 = await this.convertBase64(file);
+    let newbase64String = base64;
+
+    //file is decoded through utf 8
+    let matchreg = "data:text/plain;base64,";
+    newbase64String = newbase64String.replace(matchreg, "");
+    this.setState({
+      file: newbase64String,
+    });
   };
 
   logout() {
@@ -79,7 +145,7 @@ class ManagerDashboard extends Component {
             <br />
             <h2>Manager Dashboard</h2>
             <h3>Enter Message</h3>
-            <form id="msgForm" onSubmit={this.handleSubmit}>
+            <form id="msgForm">
               <FormControl sx={{ width: "40ch" }} variant="outlined">
                 <TextField
                   name="message"
@@ -89,14 +155,20 @@ class ManagerDashboard extends Component {
                   value={message}
                   onChange={this.handleChange}
                   required
-                />{" "}
+                />
                 <br />
                 <Button variant="outlined" component="label">
                   Upload File
-                  <input type="file" hidden />
+                  <input
+                    type="file"
+                    hidden
+                    onChange={(e) => {
+                      this.uploadFile(e);
+                    }}
+                  />
                 </Button>
                 <br />
-                <Button type="submit" variant="contained">
+                <Button variant="contained" onClick={this.handleSubmit}>
                   Send
                 </Button>
               </FormControl>
