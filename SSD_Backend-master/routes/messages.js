@@ -1,9 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const Message = require("../models/messageModel");
-var MessageAuthenticate = require("../middleware/messageAuth");
-var MsgValidation = require("../middleware/jwtValidation/msgValidation");
-var EncryptionService = require("../service/encryptionService");
 const createMessge = require("../service/messageService");
 
 router.post("/messages", async (req, res) => {
