@@ -35,4 +35,10 @@ app.use("/messages", messageRouter);
 const fileRouter = require("./routes/files");
 app.use("/files", fileRouter);
 
-app.listen(4000, () => console.log("Server Started on port 4000"));
+let server = app.listen(4000, () => {
+  var host = server.address().address;
+  var port = server.address().port;
+  console.log("Server Started on port ", port, host);
+});
+
+module.exports = server;

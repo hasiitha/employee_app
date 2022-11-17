@@ -7,10 +7,10 @@ const { userLoging, UserRegistration } = require("../service/userService");
 //login
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-
+  console.log("inside login");
   try {
-    const result = userLoging(username, password);
-
+    const result = await userLoging(username, password);
+    console.log("inside result", result);
     if (result.status === 200) {
       res.json(result.obj);
     } else {
@@ -30,9 +30,10 @@ router.post("/create", async (req, res) => {
     if (UserRegistrationValidation(req)) {
       const { username, password, role } = req.body;
 
-      const result = UserRegistration(username, password, role);
+      const result = await UserRegistration(username, password, role);
+      console.log(result);
       if (result.status === 201) {
-        res.json(result.obj);
+        res.status(201).json(result.obj);
       } else {
         res.status(400).json({ message: "invalid" });
       }

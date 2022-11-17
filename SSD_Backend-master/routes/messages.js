@@ -7,10 +7,10 @@ router.post("/messages", async (req, res) => {
   const { encryptedMsg, message, sender } = req.body;
 
   try {
-    const result = createMessge(message, sender, encryptedMsg);
+    const result = await createMessge(message, sender, encryptedMsg, req);
 
     if (result.status === 201) {
-      res.json(result.obj);
+      res.status(201).json(result.obj);
     } else if (result.status === 401) {
       res.status(401).json({ message: "invalid" });
     } else {
